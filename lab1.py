@@ -51,8 +51,13 @@ def main():
             
             ans.append(f)
             delta_array.append(delta)
+        
+        for set in normalization_data_set:
+            shuffle(set)
+            
 
     print("answer ", ans, '\n'*2, "delta", delta_array)    
+
 
 if __name__ == '__main__':
     main()
