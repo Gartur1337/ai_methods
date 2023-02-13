@@ -1,69 +1,95 @@
-import pandas as pd
 import math
+import matplotlib.pyplot as plt
 import random
-from random import shuffle
+import pandas as pd
+# w = [0.8783463777447753, 0.6055841247690652, 0.9334764782683045, 0.5764482705721725]
+# w = [0,0,0,0]
+# w = [0.1, 0.2, -0.1, -0.2]
+w = [random.uniform(0,1) for i in range(4)]
+print(f'weights: {w}')
 
-def activate_func(x1,x2,x3):
-    func = math.sin(x1) * (x2 + x3) 
+def new_index_list(arr) -> int:
+    max_length = 0
+    for inarr in arr:
+        if len(inarr) > max_length:
+            max_length = len(inarr)
+
+    index_list = [i for i in range(max_length)]
+    random.shuffle(index_list)
+    return index_list
+
+def shuffle_by_index_list(arr):
+    index_list = new_index_list(arr)
+    new_arr = []
+    for i in arr:
+        new_arr.append([])
+
+    for index in index_list:
+        inside_index = 0
+        for i in new_arr:
+            i.append(arr[inside_index][index])
+            inside_index += 1
+
+    return new_arr
 
 def main():
-    w = [random.uniform(0,1) for i in range(4)]
     data_set = [[] for i in range(4)]
-    normalization_data_set = [[] for i in range(4)]
-
-    print('weigths:', w, '\n')
-
+    error_array = []
+    arr = [[] for i in range(4)]
+    v = 0.5
     excel_data = pd.read_excel('lab1.xlsx')
 
     data = pd.DataFrame(excel_data, columns=['x1', 'x2', 'x3', 'y'])
 
     data_set = [list(v) for k, v in data.items()]
     
+    for set in data_set:
+        print(set)
+ 
+    
     for i in range(len(data_set)):
         for j in range(len(data_set[i])):
-            normalization_data_set[i].append((data_set[i][j] - min(data_set[i])) / (max(data_set[i]) - min(data_set[i])))
+            arr[i].append((data_set[i][j] - min(data_set[i])) / (max(data_set[i]) - min(data_set[i])))
 
-    for set in normalization_data_set:
+    for set in arr:
         print(set,'\n')
 
-    for epoch in range(200):
-        s = 0
-        delta = 0
-        v = 0.9
-        ans = []
-        delta_array = []
-        result = 0
-        for k in range(14):
+    for _ in range(400):
+        error = 0
+        delta_arr = []
+        for k in range(20):
+            s = 0
             for i in range(len(w)):
                 if i == 0:
+                    print(f'w {i} {w[i]}  * 1')
                     s += w[i] * 1
                 else:
-                    s += w[i] * normalization_data_set[i-1][k]
-
-            f = 1 / (1 + math.exp(-1 * s))
-            delta = normalization_data_set[-1][k] - f
+                    print(f'w {i} {w[i]}  arr {arr[i-1][k]}')
+                    s += w[i] * arr[i-1][k]
+                    
+            f = 1 / (1 + math.exp(-0.1 * s))
+            print(f'f {f}')
+            delta = arr[-1][k] - f
+            print(f'delta {delta}')
 
             for i in range(len(w)):
                 if i == 0:
-                    # print('weight:', i, w[i], '\n')
-                    w[i] += delta * v
+                    w[i] +=  delta * v
                 else:
-                    # print('weight:', i, w[i], '\n', 'data set:', normalization_data_set[i-1][k])
-                    w[i] += delta * v * normalization_data_set[i-1][k]      
-            ans.append(f)
-            delta_array.append(delta)
+                    w[i] += delta * v * arr[i-1][k]
+            delta_arr.append(delta)
+        
+        for j in delta_arr:
+            error += math.pow(j,2)
 
-        for k in range(14):
-            normalization_data_set[-1][k] = math.sin(normalization_data_set[0][k]) * (normalization_data_set[1][k] + normalization_data_set[2][k])
+        error = math.sqrt(error / 20)
+        
+        error_array.append(error)
+        arr = shuffle_by_index_list(arr)
+        print(f'on epoch {_} error {error}')
 
-        for i in range(len(normalization_data_set) - 1):
-            shuffle(normalization_data_set[i])
-
-        result += math.pow(normalization_data_set[-1][k] - f,2)
-        e = math.sqrt(result * (1 / 14))
-        print("Error on epoch: ", epoch, e)
-
-    # print("answer ", ans, '\n'*2, "delta", delta_array)    
+    plt.plot(error_array)
+    plt.show()
 
 if __name__ == '__main__':
     main()
