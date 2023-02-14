@@ -2,11 +2,7 @@ import math
 import matplotlib.pyplot as plt
 import random
 import pandas as pd
-# w = [0.8783463777447753, 0.6055841247690652, 0.9334764782683045, 0.5764482705721725]
-# w = [0,0,0,0]
-# w = [0.1, 0.2, -0.1, -0.2]
-w = [random.uniform(0,1) for i in range(4)]
-print(f'weights: {w}')
+
 
 def new_index_list(arr) -> int:
     max_length = 0
@@ -33,6 +29,7 @@ def shuffle_by_index_list(arr):
     return new_arr
 
 def main():
+    w = [random.uniform(0,1) for i in range(4)]
     data_set = [[] for i in range(4)]
     error_array = []
     arr = [[] for i in range(4)]
@@ -43,10 +40,11 @@ def main():
 
     data_set = [list(v) for k, v in data.items()]
     
+    print(f'weights: {w}')
+
     for set in data_set:
         print(set)
  
-    
     for i in range(len(data_set)):
         for j in range(len(data_set[i])):
             arr[i].append((data_set[i][j] - min(data_set[i])) / (max(data_set[i]) - min(data_set[i])))
