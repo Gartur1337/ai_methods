@@ -7,41 +7,45 @@ class KohonenNetwork:
         self.learning_rate_decrease = learning_rate_decrease
         self.cluster_size = cluster_size
         self.weights =  []
+        self.cluster_examples = [0] * cluster_size 
     
+    def normalize_data(self, data):
+        x_normalize = [[(data[j][i] - min(data[j])) / (max(data[j]) - min(data[j])) for i in range(len(data[j]))] for j in range(len(data))]
+
+        return x_normalize
+
+
     def train(self, data):
-        # initialize weights
         self.weights = [[0.20, 0.20, 0.30, 0.40, 0.40, 0.20, 0.50],
                          [0.20, 0.80, 0.70, 0.80, 0.70, 0.70, 0.80],
                          [0.80, 0.20, 0.50, 0.50, 0.40, 0.40, 0.40],
                          [0.80, 0.80, 0.60, 0.70, 0.70, 0.60, 0.70]]
         
-        # calculate number of epochs
         num_epochs = self.learning_rate / self.learning_rate_decrease
         
         for epoch in range(int(round(num_epochs))):
             random.shuffle(data)
-            
+            cluster_counts = [0] * self.cluster_size
             for data_set in range(len(data)):
-                r = []
-                
-                # calculate Euclidean distance between input data and each weight
+                r = []  
                 for k in range(self.cluster_size):
                     s = 0
                     for i in range(len(data[0])):
                         s += (data[data_set][i] - self.weights[k][i]) ** 2
                     r.append(math.sqrt(s))
                 
-                # find the best matching unit (BMU)
                 bmu = min(r)
                 bmu_r = r.index(bmu)
-                
-                # adjust weights of the BMU and its neighbors
+
+                cluster_counts[bmu_r] += 1  
+
                 for i in range(len(self.weights[bmu_r])):
                     self.weights[bmu_r][i] += self.learning_rate * (data[data_set][i] - self.weights[bmu_r][i])
             
-            # decrease learning rate
             self.learning_rate -= self.learning_rate_decrease
-    
+        print(f'Epoch {epoch+1}, Cluster Counts: {cluster_counts}')
+        
+
     def print_weights(self):
         for weight in self.weights:
             print(f'{weight}\n')
@@ -71,7 +75,6 @@ def main():
     kohonen_network = KohonenNetwork()
     kohonen_network.train(data)
     kohonen_network.print_weights()
-
 
 if __name__ == '__main__':
     main()
